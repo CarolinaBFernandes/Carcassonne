@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://cpuqqiidj8yss"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_u5m1m"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_3gepm"]
+[ext_resource type="Texture2D" uid="uid://gn53mnrfjnhv" path="res://assets/tiles/CastleCenterSide0.png" id="3_u5m1m"]
+
+[sub_resource type="Resource" id="Resource_sf328"]
+script = ExtResource("1_u5m1m")
+sides = Array[int]([0, 1, 3])
+meeple_anchor = Vector2(0, -80)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_vdn7g"]
+script = ExtResource("1_u5m1m")
+type = 2
+half_ports = Array[int]([4, 5])
+adjacent_cities = Array[int]([0])
+meeple_anchor = Vector2(0, -160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_3gepm")
+id = "o"
+texture = ExtResource("3_u5m1m")
+count = 4
+features = Array[ExtResource("1_u5m1m")]([SubResource("Resource_sf328"), SubResource("Resource_vdn7g")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

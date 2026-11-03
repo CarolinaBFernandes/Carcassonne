@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://cplctpyag6ga1"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_svkss"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_hnryg"]
+[ext_resource type="Texture2D" uid="uid://d4je12ux01vfa" path="res://assets/tiles/CastleWallCurveLeft0.png" id="3_hnryg"]
+
+[sub_resource type="Resource" id="Resource_p1b4u"]
+script = ExtResource("1_svkss")
+sides = Array[int]([0])
+meeple_anchor = Vector2(0, -160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_3bphg"]
+script = ExtResource("1_svkss")
+type = 1
+sides = Array[int]([2, 3])
+meeple_anchor = Vector2(-160, 0)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_hfmqe"]
+script = ExtResource("1_svkss")
+type = 2
+half_ports = Array[int]([5, 6])
+meeple_anchor = Vector2(-160, 160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_48ncd"]
+script = ExtResource("1_svkss")
+type = 2
+half_ports = Array[int]([2, 3, 4, 7])
+adjacent_cities = Array[int]([0])
+meeple_anchor = Vector2(160, 0)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_hnryg")
+id = "j"
+texture = ExtResource("3_hnryg")
+count = 3
+features = Array[ExtResource("1_svkss")]([SubResource("Resource_p1b4u"), SubResource("Resource_3bphg"), SubResource("Resource_hfmqe"), SubResource("Resource_48ncd")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

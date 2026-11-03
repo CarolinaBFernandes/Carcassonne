@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://ctadvxaj6i6xj"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_j1d4k"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_h14lf"]
+[ext_resource type="Texture2D" uid="uid://wj62vji6ltic" path="res://assets/tiles/CastleTube0.png" id="3_h14lf"]
+
+[sub_resource type="Resource" id="Resource_8fb0y"]
+script = ExtResource("1_j1d4k")
+sides = Array[int]([1, 3])
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_64l4s"]
+script = ExtResource("1_j1d4k")
+type = 2
+half_ports = Array[int]([0, 1])
+adjacent_cities = Array[int]([0])
+meeple_anchor = Vector2(0, -140)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_x03q1"]
+script = ExtResource("1_j1d4k")
+type = 2
+half_ports = Array[int]([4, 5])
+adjacent_cities = Array[int]([0])
+meeple_anchor = Vector2(0, 140)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_h14lf")
+id = "f"
+texture = ExtResource("3_h14lf")
+count = 3
+features = Array[ExtResource("1_j1d4k")]([SubResource("Resource_8fb0y"), SubResource("Resource_64l4s"), SubResource("Resource_x03q1")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

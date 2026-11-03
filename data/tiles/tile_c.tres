@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://dy45ykydsrror"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_1qm4d"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_v0bqq"]
+[ext_resource type="Texture2D" uid="uid://bhrgfr7tlv5f8" path="res://assets/tiles/MonasteryRoad0.png" id="3_v0bqq"]
+
+[sub_resource type="Resource" id="Resource_jyxgc"]
+script = ExtResource("1_1qm4d")
+type = 3
+meeple_anchor = Vector2(0, -20)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_wvamj"]
+script = ExtResource("1_1qm4d")
+type = 1
+sides = Array[int]([2])
+meeple_anchor = Vector2(0, 180)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_eyie1"]
+script = ExtResource("1_1qm4d")
+type = 2
+half_ports = Array[int]([0, 1, 2, 3, 4, 5, 6, 7])
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_v0bqq")
+id = "c"
+texture = ExtResource("3_v0bqq")
+count = 2
+features = Array[ExtResource("1_1qm4d")]([SubResource("Resource_jyxgc"), SubResource("Resource_wvamj"), SubResource("Resource_eyie1")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

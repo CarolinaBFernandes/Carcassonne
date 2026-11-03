@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://dx30fhmb8yym3"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_lrgxa"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_eijai"]
+[ext_resource type="Texture2D" uid="uid://8oeisac5yy5k" path="res://assets/tiles/CastleWallJunction0.png" id="3_eijai"]
+
+[sub_resource type="Resource" id="Resource_p1cm5"]
+script = ExtResource("1_lrgxa")
+sides = Array[int]([0])
+meeple_anchor = Vector2(0, -160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_eabob"]
+script = ExtResource("1_lrgxa")
+type = 1
+sides = Array[int]([1, 2, 3])
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_ijo4q"]
+script = ExtResource("1_lrgxa")
+type = 2
+half_ports = Array[int]([2, 7])
+meeple_anchor = Vector2(-160, -80)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_sh6lg"]
+script = ExtResource("1_lrgxa")
+type = 2
+half_ports = Array[int]([3, 4])
+meeple_anchor = Vector2(80, 160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_4eqfj"]
+script = ExtResource("1_lrgxa")
+type = 2
+half_ports = Array[int]([5, 6])
+meeple_anchor = Vector2(-80, 160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_eijai")
+id = "l"
+texture = ExtResource("3_eijai")
+count = 3
+features = Array[ExtResource("1_lrgxa")]([SubResource("Resource_p1cm5"), SubResource("Resource_eabob"), SubResource("Resource_ijo4q"), SubResource("Resource_sh6lg"), SubResource("Resource_4eqfj")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

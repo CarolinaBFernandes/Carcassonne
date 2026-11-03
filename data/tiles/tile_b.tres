@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://nqpxd52crklo"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_1dtg2"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_5f2ka"]
+[ext_resource type="Texture2D" uid="uid://co5ewqadkufnn" path="res://assets/tiles/Monastery0.png" id="3_5f2ka"]
+
+[sub_resource type="Resource" id="Resource_d4q8l"]
+script = ExtResource("1_1dtg2")
+type = 3
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_4tn4y"]
+script = ExtResource("1_1dtg2")
+type = 2
+half_ports = Array[int]([0, 1, 2, 3, 4, 5, 6, 7])
+meeple_anchor = Vector2(0, -180)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_5f2ka")
+id = "b"
+texture = ExtResource("3_5f2ka")
+count = 4
+features = Array[ExtResource("1_1dtg2")]([SubResource("Resource_d4q8l"), SubResource("Resource_4tn4y")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

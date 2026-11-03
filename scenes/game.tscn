@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://dn6h0a8ceq2dp"]
+
+[ext_resource type="Script" uid="uid://i8ee70i7ejsw" path="res://scripts/view/game.gd" id="1_lnu2h"]
+[ext_resource type="Script" uid="uid://cqc0ykxg8crg1" path="res://scripts/view/camera_controller.gd" id="2_lbhrr"]
+[ext_resource type="Script" uid="uid://buaf0da6evuvj" path="res://scripts/view/board_view.gd" id="3_iywne"]
+
+[node name="Node2D" type="Node2D" unique_id=759053785]
+script = ExtResource("1_lnu2h")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=557226104]
+script = ExtResource("2_lbhrr")
+
+[node name="BoardView" type="Node2D" parent="." unique_id=696126981]
+script = ExtResource("3_iywne")
+metadata/_custom_type_script = "uid://buaf0da6evuvj"
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1466589431]

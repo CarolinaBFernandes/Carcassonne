@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://cs6l2j4pm8tye"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_mpxep"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_3pxxy"]
+[ext_resource type="Texture2D" uid="uid://bkrxu0vhldjma" path="res://assets/tiles/CastleCenter0.png" id="3_3pxxy"]
+
+[sub_resource type="Resource" id="Resource_we5lp"]
+script = ExtResource("1_mpxep")
+sides = Array[int]([0, 1, 2, 3])
+meeple_anchor = Vector2(250, 250)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_3pxxy")
+id = "a"
+texture = ExtResource("3_3pxxy")
+features = Array[ExtResource("1_mpxep")]([SubResource("Resource_we5lp")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

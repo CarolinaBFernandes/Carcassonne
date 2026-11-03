@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://j42wxch7qwjl"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_ca02y"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_4wcfk"]
+[ext_resource type="Texture2D" uid="uid://dorn1nf3ydbp4" path="res://assets/tiles/RoadCrossLarge0.png" id="3_ca02y"]
+
+[sub_resource type="Resource" id="Resource_bb0wr"]
+script = ExtResource("1_ca02y")
+type = 1
+sides = Array[int]([1, 2, 3])
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_vxbyd"]
+script = ExtResource("1_ca02y")
+type = 2
+half_ports = Array[int]([0, 7])
+meeple_anchor = Vector2(80, 0)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_jdnud"]
+script = ExtResource("1_ca02y")
+type = 2
+half_ports = Array[int]([5, 6])
+meeple_anchor = Vector2(-160, -160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_0cvj7"]
+script = ExtResource("1_ca02y")
+type = 2
+half_ports = Array[int]([3, 4])
+meeple_anchor = Vector2(160, 160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_ghqxs"]
+script = ExtResource("1_ca02y")
+type = 2
+half_ports = Array[int]([1, 2])
+meeple_anchor = Vector2(160, -160)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_4wcfk")
+id = "t"
+texture = ExtResource("3_ca02y")
+features = Array[ExtResource("1_ca02y")]([SubResource("Resource_bb0wr"), SubResource("Resource_vxbyd"), SubResource("Resource_jdnud"), SubResource("Resource_0cvj7"), SubResource("Resource_ghqxs")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"

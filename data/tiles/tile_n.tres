@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="TileDef" format=3 uid="uid://cn07ibulgkej3"]
+
+[ext_resource type="Script" uid="uid://e8dxaxk0fq17" path="res://scripts/model/feature_data.gd" id="1_dcf6u"]
+[ext_resource type="Script" uid="uid://d4lxo5ldqx5wv" path="res://scripts/model/tile_def.gd" id="2_aef03"]
+[ext_resource type="Texture2D" uid="uid://dyv5bbdn0emqu" path="res://assets/tiles/CastleEdgeRoad0.png" id="3_dcf6u"]
+
+[sub_resource type="Resource" id="Resource_sf328"]
+script = ExtResource("1_dcf6u")
+sides = Array[int]([0, 1])
+meeple_anchor = Vector2(80, -80)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_4w3en"]
+script = ExtResource("1_dcf6u")
+type = 1
+sides = Array[int]([2, 3])
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_vdn7g"]
+script = ExtResource("1_dcf6u")
+type = 2
+half_ports = Array[int]([5, 6])
+meeple_anchor = Vector2(-160, 80)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[sub_resource type="Resource" id="Resource_vftax"]
+script = ExtResource("1_dcf6u")
+type = 2
+half_ports = Array[int]([4, 7])
+adjacent_cities = Array[int]([0])
+meeple_anchor = Vector2(-160, -80)
+metadata/_custom_type_script = "uid://e8dxaxk0fq17"
+
+[resource]
+script = ExtResource("2_aef03")
+id = "n"
+texture = ExtResource("3_dcf6u")
+count = 5
+features = Array[ExtResource("1_dcf6u")]([SubResource("Resource_sf328"), SubResource("Resource_4w3en"), SubResource("Resource_vdn7g"), SubResource("Resource_vftax")])
+metadata/_custom_type_script = "uid://d4lxo5ldqx5wv"
