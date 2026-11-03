@@ -37,7 +37,8 @@ func _initialize() -> void:
 	gm.tabuleiro = tab
 	gm.ultimaPeca = t_vila
 	var estado := ColocandoMeeple.new()
-	estado._pontuar_tile(gm, t_vila)
+	estado.contexto = gm
+	estado._pontuar_tile(t_vila)
 
 	print("--- APOS PONTUAR ---")
 	print("A: pontos=", jogA.pontos, " reserva=", jogA.meeplesDisponiveis, " (esperado 4 / 7)")

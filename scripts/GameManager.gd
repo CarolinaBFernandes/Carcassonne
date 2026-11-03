@@ -59,6 +59,7 @@ func iniciarPartida(configs: Array, tab, semente: int = 0) -> void:
 	rodada = Rodada.new(jogadores, 1)
 	rodadas = [rodada]
 	estadoAtual = Ocioso.new()
+	estadoAtual.contexto = self
 	emit_signal("vez_mudou", jogadorAtivo())
 	iniciar_vez()
 
@@ -85,20 +86,21 @@ func avancar_turno() -> void:
 	iniciar_vez()
 
 func colocarPeca(tile, posicao) -> bool:
-	return estadoAtual.colocarPeca(self, tile, posicao)
+	return estadoAtual.colocarPeca(tile, posicao)
 
 func colocarMeeple(ft) -> bool:
-	return estadoAtual.colocarMeeple(self, ft)
+	return estadoAtual.colocarMeeple(ft)
 
 func pular() -> void:
-	estadoAtual.pular(self)
+	estadoAtual.pular()
 
 func mudarEstado(novo) -> void:
 	if estadoAtual != null:
-		estadoAtual.saida(self)
+		estadoAtual.saida()
+	novo.contexto = self
 	estadoAtual = novo
 	emit_signal("estado_mudou", novo.nome())
-	novo.entrada(self)
+	novo.entrada()
 
 func _agendar_ia() -> void:
 	await get_tree().create_timer(0.0 if auto_rapido else 0.7).timeout
@@ -238,6 +240,7 @@ func carregar(slot: int, tab) -> bool:
 	tileAtual = (deck.criar_tile(d["tileAtual"]["tipo"], int(d["tileAtual"]["rot"])) if d.get("tileAtual") != null else null)
 	ultimaPeca = (tabuleiro.getTile(Posicao.new(int(d["ultima"]["x"]), int(d["ultima"]["y"]))) if d.get("ultima") != null else null)
 	estadoAtual = _estado_por_nome(str(d.get("estado", "ColocandoPeca")))
+	estadoAtual.contexto = self
 	emit_signal("vez_mudou", jogadorAtivo())
 	if tileAtual != null:
 		emit_signal("tile_sorteado", tileAtual)
