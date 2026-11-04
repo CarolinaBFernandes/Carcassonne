@@ -25,6 +25,15 @@ const _PONTOS := {
 	8: Vector2(0.5, 0.5),
 }
 
+# Esquerda e direita de cada borda, olhando para fora da peca.
+# Celulas: 7 0 4 / 3 8 1 / 6 2 5.
+const _METADE := {
+	0: [7, 4],
+	1: [4, 5],
+	2: [5, 6],
+	3: [6, 7],
+}
+
 func construir(tipo_base: String, rot: int = 0) -> void:
 	tipoBase = tipo_base
 	features.clear()
@@ -74,6 +83,7 @@ func construir(tipo_base: String, rot: int = 0) -> void:
 			if f != null:
 				f.tile = self
 				if tp == FeatureTile.Tipo.CAMPO:
+					f.aberturas = _aberturas_campo(membros)
 					var centro := Vector2(0.5, 0.5)
 					var melhor: Vector2 = _PONTOS[membros[0]]
 					var maxd := (melhor - centro).length()
@@ -116,6 +126,16 @@ func _uf_unir(pai: Array[int], a: int, b: int) -> void:
 	if ra != rb:
 		pai[rb] = ra
 
+func _aberturas_campo(membros: Array) -> Array[int]:
+	var abs: Array[int] = []
+	for d in Direcao.TODAS:
+		var met: Array = _METADE[d]
+		if membros.has(met[0]) or membros.has(d):
+			abs.append(d * 2)
+		if membros.has(met[1]) or membros.has(d):
+			abs.append(d * 2 + 1)
+	return abs
+
 func _recalcular_bordas() -> void:
 	bordas = [FeatureTile.Tipo.CAMPO, FeatureTile.Tipo.CAMPO,
 		FeatureTile.Tipo.CAMPO, FeatureTile.Tipo.CAMPO]
@@ -132,6 +152,12 @@ func rotacionar() -> void:
 		for d in f.direcoes:
 			novas.append(Direcao.rotacionar(d, 1))
 		f.direcoes = novas
+		var novas_ab: Array[int] = []
+		for ab in f.aberturas:
+			var dir := int(ab / 2)
+			var lado := int(ab) % 2
+			novas_ab.append(Direcao.rotacionar(dir, 1) * 2 + lado)
+		f.aberturas = novas_ab
 		var dlt: Vector2 = f.ancora_norm - Vector2(0.5, 0.5)
 		f.ancora_norm = Vector2(0.5, 0.5) + Vector2(-dlt.y, dlt.x)
 	_recalcular_bordas()

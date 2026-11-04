@@ -13,6 +13,15 @@ func posicionar(tile: Tile, posicao: Posicao) -> void:
 		add_child(tile)
 	tile.position = Vector2(posicao.vetor()) * TAM
 
+func remover(tile: Tile) -> void:
+	if tile == null:
+		return
+	if tile.posicao != null and _tiles.get(tile.posicao.chave()) == tile:
+		_tiles.erase(tile.posicao.chave())
+	tile.posicao = null
+	tile.tabuleiro = null
+	tile.posicionadoPor = null
+
 func getTile(posicao: Posicao) -> Tile:
 	if posicao == null:
 		return null
@@ -84,22 +93,57 @@ func posicoes_candidatas() -> Array:
 	return res
 
 func getGrupoConectado(ft) -> Array:
-	var grupo := [ft]
-	if ft.direcoes.is_empty():
-		return grupo
-	var fila := [ft]
+	if ft == null:
+		return []
+	var grupo: Array = [ft]
+	var vistos := {ft.get_instance_id(): true}
+	var fila: Array = [ft]
 	while not fila.is_empty():
-		var f = fila.pop_back()
-		for d in f.direcoes:
-			var nb := getTile(Posicao.de_vetor(f.tile.posicao.vetor() + Direcao.vetor(d)))
-			if nb == null:
-				continue
-			var oposto := Direcao.oposta(d)
-			for g in nb.features:
-				if g.tipo == f.tipo and g.direcoes.has(oposto) and not grupo.has(g):
-					grupo.append(g)
-					fila.append(g)
+		var f = fila.pop_front()
+		if f.tile == null or f.tile.posicao == null:
+			continue
+		if f.tipo == FeatureTile.Tipo.CAMPO:
+			for ab in f.aberturas:
+				var dir := int(ab / 2)
+				var viz := getTile(f.tile.posicao.somar_direcao(dir))
+				if viz == null:
+					continue
+				var espelho: int = Direcao.oposta(dir) * 2 + (1 - (int(ab) % 2))
+				for g in viz.features:
+					if g.tipo == FeatureTile.Tipo.CAMPO and _tem_int(g.aberturas, espelho):
+						_entrar_grupo(grupo, vistos, fila, g)
+		else:
+			for d in f.direcoes:
+				var viz := getTile(f.tile.posicao.somar_direcao(d))
+				if viz == null:
+					continue
+				var oposto := Direcao.oposta(d)
+				for g in viz.features:
+					if g.tipo == f.tipo and _tem_int(g.direcoes, oposto):
+						_entrar_grupo(grupo, vistos, fila, g)
 	return grupo
+
+func podeColocarMeeple(ft) -> bool:
+	if ft == null:
+		return false
+	for g in getGrupoConectado(ft):
+		if not g.meeples.is_empty():
+			return false
+	return true
+
+func _tem_int(lista: Array, valor: int) -> bool:
+	for item in lista:
+		if int(item) == valor:
+			return true
+	return false
+
+func _entrar_grupo(grupo: Array, vistos: Dictionary, fila: Array, g) -> void:
+	var id: int = g.get_instance_id()
+	if vistos.has(id):
+		return
+	vistos[id] = true
+	grupo.append(g)
+	fila.append(g)
 
 func calcularPontos() -> Array:
 	var eventos := []

@@ -54,6 +54,8 @@ func _escolher_meeple(tile):
 	var melhor = null
 	var mp := 0
 	for f in tile.features:
+		if tile.tabuleiro != null and not tile.tabuleiro.podeColocarMeeple(f):
+			continue
 		var p: int = prioridade[f.tipo]
 		if p > mp:
 			mp = p
