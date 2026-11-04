@@ -6,16 +6,14 @@ func nome() -> String:
 
 func entrada(ctx) -> void:
 	var j = ctx.jogadorAtivo()
-	if j != null and j.meeplesDisponiveis <= 0:
+	if j != null and j.ehIA and j.meeplesDisponiveis <= 0:
 		ctx.call_deferred("pular")
 
 func colocarMeeple(ctx, ft) -> bool:
 	if ft == null or ft.tile != ctx.ultimaPeca:
 		return false
-	var grupo: Array = ctx.tabuleiro.getGrupoConectado(ft)
-	for f in grupo:
-		if not f.meeples.is_empty():
-			return false
+	if not ctx.tabuleiro.podeColocarMeeple(ft):
+		return false
 	var j = ctx.jogadorAtivo()
 	if j.meeplesDisponiveis <= 0:
 		return false
@@ -28,6 +26,7 @@ func pular(ctx) -> void:
 	_finalizar(ctx)
 
 func _finalizar(ctx) -> void:
+	ctx.last_placed_pos = null
 	_pontuar_tile(ctx, ctx.ultimaPeca)
 	ctx.emit_signal("pontuacao_mudou")
 	ctx.avancar_turno()

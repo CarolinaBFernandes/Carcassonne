@@ -10,6 +10,7 @@ func colocarPeca(ctx, tile, posicao) -> bool:
 	ctx.tabuleiro.posicionar(tile, posicao)
 	tile.setPosicionadoPor(ctx.jogadorAtivo())
 	ctx.ultimaPeca = tile
+	ctx.last_placed_pos = posicao
 	ctx.tileAtual = null
 	ctx.emit_signal("tabuleiro_mudou")
 	ctx.mudarEstado(ColocandoMeeple.new())

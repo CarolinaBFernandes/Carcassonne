@@ -17,10 +17,13 @@ var rodadas: Array = []
 var estadoAtual = null
 var tileAtual = null
 var ultimaPeca = null
+var last_placed_pos = null
 var auto_rapido := false
 var partida_seed := 0
 var ultimos_eventos_fim: Array = []
 var historico: Array = []
+
+const SAVE_PATH := "user://save_slot_%d.json"
 
 static func getInstancia():
 	var ml := Engine.get_main_loop()
@@ -51,6 +54,7 @@ func iniciarPartida(configs: Array, tab, semente: int = 0) -> void:
 			semente = 1
 	partida_seed = semente
 	historico = []
+	last_placed_pos = null
 	tabuleiro = tab
 	deck = Deck.new(false, semente)
 	var inicial = deck.criar_tile(TilesDef.TILE_INICIAL, 0)
@@ -92,6 +96,28 @@ func colocarMeeple(ft) -> bool:
 
 func pular() -> void:
 	estadoAtual.pular(self)
+
+func cancel_tile_placement() -> bool:
+	if not (estadoAtual is ColocandoMeeple):
+		return false
+	var j = jogadorAtivo()
+	if j != null and j.ehIA:
+		return false
+	var tile = ultimaPeca
+	if tile == null or last_placed_pos == null or tile.posicao == null:
+		return false
+	if not tile.posicao.igual(last_placed_pos):
+		return false
+	for f in tile.features:
+		if not f.meeples.is_empty():
+			return false
+	tabuleiro.remover(tile)
+	tileAtual = tile
+	ultimaPeca = null
+	last_placed_pos = null
+	mudarEstado(ColocandoPeca.new())
+	emit_signal("tabuleiro_mudou")
+	return true
 
 func mudarEstado(novo) -> void:
 	if estadoAtual != null:
@@ -138,8 +164,6 @@ func ranking() -> Array:
 	var copia := jogadores.duplicate()
 	copia.sort_custom(func(a, b): return a.pontos > b.pontos)
 	return copia
-
-const SAVE_PATH := "user://save_slot_%d.json"
 
 func _jogador_dict(j) -> Dictionary:
 	return {
@@ -238,6 +262,9 @@ func carregar(slot: int, tab) -> bool:
 	tileAtual = (deck.criar_tile(d["tileAtual"]["tipo"], int(d["tileAtual"]["rot"])) if d.get("tileAtual") != null else null)
 	ultimaPeca = (tabuleiro.getTile(Posicao.new(int(d["ultima"]["x"]), int(d["ultima"]["y"]))) if d.get("ultima") != null else null)
 	estadoAtual = _estado_por_nome(str(d.get("estado", "ColocandoPeca")))
+	last_placed_pos = null
+	if estadoAtual is ColocandoMeeple and ultimaPeca != null and ultimaPeca.posicao != null:
+		last_placed_pos = ultimaPeca.posicao
 	emit_signal("vez_mudou", jogadorAtivo())
 	if tileAtual != null:
 		emit_signal("tile_sorteado", tileAtual)

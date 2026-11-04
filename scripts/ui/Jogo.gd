@@ -13,7 +13,7 @@ var _ghost = null
 var _validos: Node2D
 var _panning := false
 var _dlg_meeple: CanvasLayer
-var _ghost_meeple: Sprite2D
+var _indicadores_meeple: Array = []
 
 var _hud_layer: CanvasLayer
 var _lbl_seed: Label
@@ -24,6 +24,7 @@ var _lbl_restantes: Label
 var _btn_rot: Button
 var _btn_explorar: Button
 var _btn_naocolocar: Button
+var _btn_desfazer: Button
 
 const _ICONE_TIPO := {
 	FeatureTile.Tipo.CIDADE: "res://assets/meeple/meeple_castle.png",
@@ -184,6 +185,27 @@ func _construir_hud() -> void:
 	_btn_naocolocar.pressed.connect(func(): GM.pular())
 	layer.add_child(_btn_naocolocar)
 
+	_btn_desfazer = Button.new()
+	_btn_desfazer.text = "Desfazer peca"
+	_btn_desfazer.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_btn_desfazer.anchor_left = 1.0
+	_btn_desfazer.anchor_top = 1.0
+	_btn_desfazer.offset_left = -240
+	_btn_desfazer.offset_top = -120
+	_btn_desfazer.offset_right = -16
+	_btn_desfazer.offset_bottom = -72
+	var sbd := StyleBoxFlat.new()
+	sbd.bg_color = Color(0.45, 0.32, 0.08)
+	sbd.set_corner_radius_all(6)
+	_btn_desfazer.add_theme_stylebox_override("normal", sbd)
+	var sbd2 := StyleBoxFlat.new()
+	sbd2.bg_color = Color(0.62, 0.46, 0.12)
+	sbd2.set_corner_radius_all(6)
+	_btn_desfazer.add_theme_stylebox_override("hover", sbd2)
+	_btn_desfazer.visible = false
+	_btn_desfazer.pressed.connect(cancel_tile_placement)
+	layer.add_child(_btn_desfazer)
+
 func _atualizar_hud() -> void:
 	var j = GM.jogadorAtivo()
 	if j != null:
@@ -197,9 +219,11 @@ func _atualizar_hud() -> void:
 	_atualizar_preview()
 	var humano: bool = j != null and not j.ehIA
 	_btn_rot.disabled = not (humano and GM.estadoAtual is ColocandoPeca)
-	var fase_meeple: bool = humano and GM.estadoAtual is ColocandoMeeple and not _segmentos_jogaveis().is_empty()
-	_btn_explorar.visible = fase_meeple
+	var fase_meeple: bool = _fase_meeple_humano()
+	var tem_opcao: bool = fase_meeple and not _segmentos_jogaveis().is_empty()
+	_btn_explorar.visible = tem_opcao
 	_btn_naocolocar.visible = fase_meeple
+	_btn_desfazer.visible = fase_meeple
 
 func _atualizar_jogadores() -> void:
 	for c in _box_jogadores.get_children():
@@ -253,7 +277,7 @@ func _atualizar_preview() -> void:
 func _mostrar_regras() -> void:
 	var dlg := AcceptDialog.new()
 	dlg.title = "Regras (resumo)"
-	dlg.dialog_text = "- No seu turno, um tile e sorteado.\n- Rotacione (R) e posicione encaixando as bordas\n  (campo/estrada/cidade) com os vizinhos.\n- As posicoes validas aparecem como pecas transparentes.\n- Depois, escolha onde por 1 meeple (ou pule).\n- Estradas (1/tile), cidades (2/tile + 2/escudo) e\n  mosteiros (9) devolvem o meeple ao serem concluidos.\n- Fazendeiros (campo) ficam no tabuleiro ate o fim."
+	dlg.dialog_text = "- No seu turno, um tile e sorteado.\n- Rotacione (R) e posicione encaixando as bordas\n  (campo/estrada/cidade) com os vizinhos.\n- As posicoes validas aparecem como pecas transparentes.\n- Depois, escolha onde por 1 meeple (ou pule).\n- Antes do meeple, Desfazer peca ou o botao direito\n  devolve a peca para escolher outro local.\n- Estradas (1/tile), cidades (2/tile + 2/escudo) e\n  mosteiros (9) devolvem o meeple ao serem concluidos.\n- Fazendeiros (campo) ficam no tabuleiro ate o fim."
 	add_child(dlg)
 	dlg.popup_centered()
 	dlg.confirmed.connect(dlg.queue_free)
@@ -335,18 +359,22 @@ func _on_tile_sorteado(tile) -> void:
 
 func _on_estado_mudou(nome) -> void:
 	_fechar_dialogo_meeple()
-	_ghost_meeple_esconder()
+	_ocultar_indicadores_meeple()
 	if nome != "ColocandoPeca":
 		if _ghost != null and is_instance_valid(_ghost):
 			_ghost.modulate = Color(1, 1, 1, 1)
 		_ghost = null
-	_atualizar_validos()
-	if nome == "ColocandoMeeple":
+	elif GM.tileAtual != null:
 		var j = GM.jogadorAtivo()
-		if j != null and not j.ehIA and j.meeplesDisponiveis > 0:
-			if _segmentos_jogaveis().is_empty():
-				GM.call_deferred("pular")
+		if j != null and not j.ehIA:
+			_ghost = GM.tileAtual
+			if _ghost.get_parent() == null and tabuleiro != null:
+				tabuleiro.add_child(_ghost)
+			_atualizar_ghost()
+	_atualizar_validos()
 	_atualizar_hud()
+	if nome == "ColocandoMeeple":
+		_mostrar_indicadores_meeple()
 
 func _on_atualizar() -> void:
 	_atualizar_validos()
@@ -400,14 +428,22 @@ func _popup_pontos(pontos: int, pos_mundo: Vector2, cor, idx: int) -> void:
 	tw.set_parallel(false)
 	tw.tween_callback(lbl.queue_free)
 
+func _input(ev: InputEvent) -> void:
+	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_RIGHT and _fase_meeple_humano():
+		cancel_tile_placement()
+		get_viewport().set_input_as_handled()
+
 func _unhandled_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton:
 		if ev.button_index == MOUSE_BUTTON_WHEEL_UP and ev.pressed:
 			_zoom(1.1)
 		elif ev.button_index == MOUSE_BUTTON_WHEEL_DOWN and ev.pressed:
 			_zoom(0.9)
-		elif ev.button_index == MOUSE_BUTTON_MIDDLE or ev.button_index == MOUSE_BUTTON_RIGHT:
+		elif ev.button_index == MOUSE_BUTTON_MIDDLE:
 			_panning = ev.pressed
+		elif ev.button_index == MOUSE_BUTTON_RIGHT:
+			if not _fase_meeple_humano():
+				_panning = ev.pressed
 		elif ev.button_index == MOUSE_BUTTON_LEFT and ev.pressed:
 			_clique_esquerdo()
 	elif ev is InputEventMouseMotion:
@@ -446,6 +482,15 @@ func _rotacionar() -> void:
 		_atualizar_validos()
 		_atualizar_preview()
 
+func _fase_meeple_humano() -> bool:
+	var j = GM.jogadorAtivo()
+	return j != null and not j.ehIA and GM.estadoAtual is ColocandoMeeple
+
+func cancel_tile_placement() -> void:
+	if not _fase_meeple_humano():
+		return
+	GM.cancel_tile_placement()
+
 func _clique_esquerdo() -> void:
 	var j = GM.jogadorAtivo()
 	if j == null or j.ehIA:
@@ -461,16 +506,9 @@ func _clique_esquerdo() -> void:
 			GM.colocarMeeple(f)
 
 func _atualizar_ghost_meeple_board() -> void:
-	if not (GM.estadoAtual is ColocandoMeeple):
+	if not _fase_meeple_humano():
 		return
-	var j = GM.jogadorAtivo()
-	if j == null or j.ehIA:
-		return
-	var f = _segmento_mais_proximo(get_global_mouse_position())
-	if f != null:
-		_ghost_meeple_mostrar(f, j)
-	else:
-		_ghost_meeple_esconder()
+	_destacar_indicador_sob_mouse()
 
 func _segmento_mais_proximo(world: Vector2):
 	if GM.ultimaPeca == null:
@@ -545,13 +583,9 @@ func _segmentos_todos() -> Array:
 		if j == null or j.meeplesDisponiveis <= 0:
 			ok = false
 			motivo = "sem meeples na reserva"
-		else:
-			var grupo = GM.tabuleiro.getGrupoConectado(f)
-			for g in grupo:
-				if not g.meeples.is_empty():
-					ok = false
-					motivo = "ja ha meeple nesta estrutura"
-					break
+		elif not GM.tabuleiro.podeColocarMeeple(f):
+			ok = false
+			motivo = "ja ha meeple nesta estrutura"
 		r.append({"f": f, "ok": ok, "motivo": motivo})
 	return r
 
@@ -561,7 +595,6 @@ func _explorar_opcoes() -> void:
 
 func _abrir_dialogo_meeple(segs: Array) -> void:
 	_fechar_dialogo_meeple()
-	_ghost_meeple_esconder()
 	var layer := CanvasLayer.new()
 	layer.layer = 20
 	_dlg_meeple = layer
@@ -615,6 +648,15 @@ func _abrir_dialogo_meeple(segs: Array) -> void:
 	fechar.custom_minimum_size = Vector2(160, 46)
 	fechar.pressed.connect(_fechar_dialogo_meeple)
 	bottom.add_child(fechar)
+	var desfazer := Button.new()
+	desfazer.text = "Desfazer peca"
+	desfazer.custom_minimum_size = Vector2(180, 46)
+	var sbd := StyleBoxFlat.new()
+	sbd.bg_color = Color(0.45, 0.32, 0.08)
+	sbd.set_corner_radius_all(6)
+	desfazer.add_theme_stylebox_override("normal", sbd)
+	desfazer.pressed.connect(cancel_tile_placement)
+	bottom.add_child(desfazer)
 	var naoc := Button.new()
 	naoc.text = "Nao colocar Meeple"
 	naoc.custom_minimum_size = Vector2(220, 46)
@@ -661,25 +703,62 @@ func _card_opcao(tipo: int, rotulo: String, feature, jogador, ok: bool, motivo: 
 			GM.colocarMeeple(feature))
 	return b
 
-func _ghost_meeple_mostrar(feature, jogador) -> void:
-	if GM.ultimaPeca == null:
+func _mostrar_indicadores_meeple() -> void:
+	_ocultar_indicadores_meeple()
+	if not _fase_meeple_humano() or GM.ultimaPeca == null or tabuleiro == null:
 		return
-	if _ghost_meeple == null or not is_instance_valid(_ghost_meeple):
-		_ghost_meeple = Sprite2D.new()
-		_ghost_meeple.z_index = 50
-		tabuleiro.add_child(_ghost_meeple)
+	var jogador = GM.jogadorAtivo()
+	var base: Vector2 = (GM.ultimaPeca as Node2D).position
+	for f in _segmentos_jogaveis():
+		var s := _criar_sprite_meeple(jogador)
+		s.position = base + _ancora(f)
+		s.modulate = Color(1, 1, 1, 0.62)
+		s.set_meta("feature", f)
+		s.set_meta("escala", s.scale)
+		tabuleiro.add_child(s)
+		_indicadores_meeple.append(s)
+
+func _ocultar_indicadores_meeple() -> void:
+	for s in _indicadores_meeple:
+		if is_instance_valid(s):
+			s.queue_free()
+	_indicadores_meeple.clear()
+
+func _destacar_indicador_sob_mouse() -> void:
+	var alvo = _segmento_mais_proximo(get_global_mouse_position())
+	for s in _indicadores_meeple:
+		if not is_instance_valid(s):
+			continue
+		var base_scale: Vector2 = s.get_meta("escala")
+		var em_cima: bool = alvo != null and s.get_meta("feature") == alvo
+		if em_cima:
+			s.scale = base_scale * 1.3
+			s.modulate = Color(1.25, 1.25, 0.85, 1.0)
+			s.z_index = 51
+		else:
+			s.scale = base_scale
+			s.modulate = Color(1, 1, 1, 0.62)
+			s.z_index = 50
+
+func _criar_sprite_meeple(jogador) -> Sprite2D:
+	var s := Sprite2D.new()
+	s.z_index = 50
 	var cam := "res://assets/meeple/%s-meeple.png" % (jogador.corArquivo if jogador else "blue")
 	if ResourceLoader.exists(cam):
 		var tex: Texture2D = load(cam)
-		_ghost_meeple.texture = tex
-		_ghost_meeple.scale = Vector2.ONE * (TAM * 0.24 / float(tex.get_width()))
-	_ghost_meeple.position = (GM.ultimaPeca as Node2D).position + _ancora(feature)
-	_ghost_meeple.modulate = Color(1, 1, 1, 0.5)
-	_ghost_meeple.visible = true
+		s.texture = tex
+		s.scale = Vector2.ONE * (TAM * 0.24 / float(tex.get_width()))
+	return s
 
-func _ghost_meeple_esconder() -> void:
-	if _ghost_meeple != null and is_instance_valid(_ghost_meeple):
-		_ghost_meeple.visible = false
+func _ghost_meeple_mostrar(feature, _jogador) -> void:
+	if _indicadores_meeple.is_empty():
+		_mostrar_indicadores_meeple()
+	for s in _indicadores_meeple:
+		if is_instance_valid(s) and s.get_meta("feature") == feature:
+			var base_scale: Vector2 = s.get_meta("escala")
+			s.scale = base_scale * 1.3
+			s.modulate = Color(1.25, 1.25, 0.85, 1.0)
+			s.z_index = 51
 
 func _imagem_tile_meeple(tile, feature, jogador) -> Texture2D:
 	var cam := "res://assets/tiles/%s0.png" % tile.tipoBase
@@ -710,9 +789,6 @@ func _fechar_dialogo_meeple() -> void:
 	if _dlg_meeple != null and is_instance_valid(_dlg_meeple):
 		_dlg_meeple.queue_free()
 	_dlg_meeple = null
-	if _ghost_meeple != null and is_instance_valid(_ghost_meeple):
-		_ghost_meeple.queue_free()
-	_ghost_meeple = null
 
 func _mostrar_historico(ao_fim: bool, ranking) -> void:
 	var layer := CanvasLayer.new()
