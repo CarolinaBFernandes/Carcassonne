@@ -25,6 +25,12 @@ const _PONTOS := {
 	8: Vector2(0.5, 0.5),
 }
 
+const _ROT_CEL := {
+	0: 1, 1: 2, 2: 3, 3: 0,
+	4: 5, 5: 6, 6: 7, 7: 4,
+	8: 8,
+}
+
 # Esquerda e direita de cada borda, olhando para fora da peca.
 # Celulas: 7 0 4 / 3 8 1 / 6 2 5.
 const _METADE := {
@@ -51,6 +57,7 @@ func construir(tipo_base: String, rot: int = 0) -> void:
 			for j in _ADJ[i]:
 				if terr[j] == terr[i]:
 					_uf_unir(pai, i, j)
+		_unir_campos_na_frente_da_cidade(pai, terr)
 		var grupos := {}
 		for i in range(9):
 			if terr[i] < 0:
@@ -83,7 +90,7 @@ func construir(tipo_base: String, rot: int = 0) -> void:
 			if f != null:
 				f.tile = self
 				if tp == FeatureTile.Tipo.CAMPO:
-					f.aberturas = _aberturas_campo(membros)
+					f.aberturas = _aberturas_campo(membros, terr)
 					var centro := Vector2(0.5, 0.5)
 					var melhor: Vector2 = _PONTOS[membros[0]]
 					var maxd := (melhor - centro).length()
@@ -99,6 +106,10 @@ func construir(tipo_base: String, rot: int = 0) -> void:
 					for p in membros:
 						soma += _PONTOS[p]
 					f.ancora_norm = soma / float(membros.size())
+				var cels: Array[int] = []
+				for c in membros:
+					cels.append(int(c))
+				f.celulas = cels
 				features.append(f)
 	_recalcular_bordas()
 	rotacao = 0
@@ -126,13 +137,50 @@ func _uf_unir(pai: Array[int], a: int, b: int) -> void:
 	if ra != rb:
 		pai[rb] = ra
 
-func _aberturas_campo(membros: Array) -> Array[int]:
+# Cidade ou estrada de ponta a ponta ja separa os campos: o union-find so
+# une celulas do mesmo tipo, e muralha/estrada nao sao campo. A excecao e a
+# faixa de grama na frente de uma cidade que nao atravessa a peca (o grid
+# nao tem celula entre a muralha e o miolo). Essa faixa e um campo so,
+# exceto quando a estrada termina no portao e corta os dois lados.
+func _unir_campos_na_frente_da_cidade(pai: Array[int], terr: Array[int]) -> void:
+	if _estrada_termina_na_cidade(terr):
+		return
+	for d in Direcao.TODAS:
+		if terr[d] != FeatureTile.Tipo.CIDADE or terr[8] == FeatureTile.Tipo.CIDADE:
+			continue
+		var esq: int = int(_METADE[d][0])
+		var dire: int = int(_METADE[d][1])
+		if terr[esq] != FeatureTile.Tipo.CAMPO or terr[dire] != FeatureTile.Tipo.CAMPO:
+			continue
+		_uf_unir(pai, esq, dire)
+
+func _estrada_termina_na_cidade(terr: Array[int]) -> bool:
+	if terr[8] != FeatureTile.Tipo.ESTRADA:
+		return false
+	var saidas := 0
+	for d in Direcao.TODAS:
+		if terr[d] == FeatureTile.Tipo.ESTRADA:
+			saidas += 1
+	return saidas == 1
+
+# Campo nao atravessa borda de cidade. Em borda de estrada, cada metade
+# (esquerda/direita, olhando para fora) pertence ao campo daquele canto.
+func _aberturas_campo(membros: Array, terr: Array[int]) -> Array[int]:
 	var abs: Array[int] = []
 	for d in Direcao.TODAS:
+		var borda: int = terr[d]
+		if borda == FeatureTile.Tipo.CIDADE:
+			continue
 		var met: Array = _METADE[d]
-		if membros.has(met[0]) or membros.has(d):
+		var esq: int = int(met[0])
+		var dire: int = int(met[1])
+		if borda == FeatureTile.Tipo.ESTRADA:
+			if membros.has(esq):
+				abs.append(d * 2)
+			if membros.has(dire):
+				abs.append(d * 2 + 1)
+		elif membros.has(d) or membros.has(esq) or membros.has(dire):
 			abs.append(d * 2)
-		if membros.has(met[1]) or membros.has(d):
 			abs.append(d * 2 + 1)
 	return abs
 
@@ -158,6 +206,10 @@ func rotacionar() -> void:
 			var lado := int(ab) % 2
 			novas_ab.append(Direcao.rotacionar(dir, 1) * 2 + lado)
 		f.aberturas = novas_ab
+		var novas_cel: Array[int] = []
+		for c in f.celulas:
+			novas_cel.append(int(_ROT_CEL[int(c)]))
+		f.celulas = novas_cel
 		var dlt: Vector2 = f.ancora_norm - Vector2(0.5, 0.5)
 		f.ancora_norm = Vector2(0.5, 0.5) + Vector2(-dlt.y, dlt.x)
 	_recalcular_bordas()

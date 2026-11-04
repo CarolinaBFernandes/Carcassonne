@@ -7,6 +7,7 @@ var tipo: int = Tipo.CAMPO
 var direcoes: Array[int] = []
 # Metades de borda ocupadas por um campo: direcao * 2 + lado (0 = esquerda, 1 = direita, olhando para fora).
 var aberturas: Array[int] = []
+var celulas: Array[int] = []
 var ancora_norm := Vector2(0.5, 0.5)
 var hasEscudo: bool = false
 var meeples: Array = []

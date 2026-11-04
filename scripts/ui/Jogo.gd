@@ -40,7 +40,10 @@ const _NOME_TIPO := {
 }
 
 var _ver_encaixes := true
+var _ver_dominio := false
 var _btn_encaixes: Button
+var _btn_dominio: Button
+var _overlay_dominio: DominioCampos
 
 func _ready() -> void:
 	_cam = Camera2D.new()
@@ -53,6 +56,10 @@ func _ready() -> void:
 func iniciar() -> void:
 	tabuleiro = Tabuleiro.new()
 	add_child(tabuleiro)
+	_overlay_dominio = DominioCampos.new()
+	_overlay_dominio.z_as_relative = false
+	_overlay_dominio.z_index = 20
+	tabuleiro.add_child(_overlay_dominio)
 	_validos = Node2D.new()
 	add_child(_validos)
 	GM.tile_sorteado.connect(_on_tile_sorteado)
@@ -90,13 +97,24 @@ func _construir_hud() -> void:
 	painel.add_theme_stylebox_override("panel", sb)
 	layer.add_child(painel)
 
+	painel.clip_contents = true
 	var mc := MarginContainer.new()
+	mc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	for m in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
 		mc.add_theme_constant_override(m, 12)
 	painel.add_child(mc)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	mc.add_child(scroll)
 	var vb := VBoxContainer.new()
+	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vb.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	vb.add_theme_constant_override("separation", 8)
-	mc.add_child(vb)
+	scroll.add_child(vb)
 
 	var titulo := Label.new()
 	titulo.text = "Carcassonne"
@@ -123,17 +141,25 @@ func _construir_hud() -> void:
 	_lbl_restantes = Label.new()
 	vb.add_child(_lbl_restantes)
 
+	_btn_encaixes = Button.new()
+	_btn_encaixes.custom_minimum_size = Vector2(0, 40)
+	_btn_encaixes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_encaixes.text = "Ver encaixes: SIM"
+	_btn_encaixes.pressed.connect(_toggle_encaixes)
+	vb.add_child(_btn_encaixes)
+
+	_btn_dominio = Button.new()
+	_btn_dominio.custom_minimum_size = Vector2(0, 40)
+	_btn_dominio.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_dominio.text = "Mostrar Dominio: NAO"
+	_btn_dominio.pressed.connect(_toggle_dominio)
+	vb.add_child(_btn_dominio)
+
 	vb.add_child(HSeparator.new())
 	_btn_rot = Button.new()
 	_btn_rot.text = "Rotacionar (R)"
 	_btn_rot.pressed.connect(_rotacionar)
 	vb.add_child(_btn_rot)
-
-	_btn_encaixes = Button.new()
-	_btn_encaixes.custom_minimum_size = Vector2(0, 40)
-	_btn_encaixes.text = "Ver encaixes: SIM"
-	_btn_encaixes.pressed.connect(_toggle_encaixes)
-	vb.add_child(_btn_encaixes)
 
 	var b_hist := Button.new()
 	b_hist.text = "Historico"
@@ -376,9 +402,20 @@ func _on_estado_mudou(nome) -> void:
 	if nome == "ColocandoMeeple":
 		_mostrar_indicadores_meeple()
 
+func _ao_alternar_dominio(ligado: bool) -> void:
+	if _overlay_dominio == null:
+		return
+	_overlay_dominio.ativo = ligado
+	if ligado:
+		_overlay_dominio.atualizar(tabuleiro)
+	else:
+		_overlay_dominio.limpar()
+
 func _on_atualizar() -> void:
 	_atualizar_validos()
 	_atualizar_hud()
+	if _overlay_dominio != null and _overlay_dominio.ativo:
+		_overlay_dominio.atualizar(tabuleiro)
 
 func _on_vez(_j) -> void:
 	_atualizar_hud()
@@ -532,6 +569,12 @@ func _toggle_encaixes() -> void:
 	if _btn_encaixes != null:
 		_btn_encaixes.text = "Ver encaixes: %s" % ("SIM" if _ver_encaixes else "NAO")
 	_atualizar_validos()
+
+func _toggle_dominio() -> void:
+	_ver_dominio = not _ver_dominio
+	if _btn_dominio != null:
+		_btn_dominio.text = "Mostrar Dominio: %s" % ("SIM" if _ver_dominio else "NAO")
+	_ao_alternar_dominio(_ver_dominio)
 
 func _atualizar_validos() -> void:
 	if _validos == null:

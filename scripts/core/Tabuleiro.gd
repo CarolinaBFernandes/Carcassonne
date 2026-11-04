@@ -123,6 +123,24 @@ func getGrupoConectado(ft) -> Array:
 						_entrar_grupo(grupo, vistos, fila, g)
 	return grupo
 
+func dominios_campo() -> Array:
+	var res: Array = []
+	var vistos := {}
+	for t in tiles():
+		for f in t.features:
+			if f.tipo != FeatureTile.Tipo.CAMPO:
+				continue
+			if vistos.has(f.get_instance_id()):
+				continue
+			var grupo: Array = getGrupoConectado(f)
+			for g in grupo:
+				vistos[g.get_instance_id()] = true
+			var donos: Array = f.donos_majoritarios(grupo)
+			if donos.is_empty():
+				continue
+			res.append({"features": grupo, "donos": donos})
+	return res
+
 func podeColocarMeeple(ft) -> bool:
 	if ft == null:
 		return false

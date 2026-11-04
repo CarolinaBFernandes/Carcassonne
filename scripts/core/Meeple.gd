@@ -21,6 +21,8 @@ func configurar(jogador, tipo_seg: int) -> void:
 	tipoSegmento = tipo_seg
 
 func _ready() -> void:
+	z_as_relative = false
+	z_index = 40
 	_construir_sprite()
 
 func _construir_sprite() -> void:
